@@ -76,6 +76,13 @@ public class InventoryController {
         return inventoryService.getTransactionHistory(productId, user.getOrganizationId());
     }
 
+    @GetMapping("/sales-stats")
+    public List<UserSalesStatsResponseDto> getUserSalesStats(
+            @CookieValue(name = "jwt", required = false) String token) {
+        User user = authenticateUser(token);
+        return inventoryService.getUserSalesStats(user.getOrganizationId());
+    }
+
     private User authenticateUser(String token) {
         if (token == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not authenticated");
