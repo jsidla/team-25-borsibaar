@@ -12,6 +12,10 @@ public interface UserMapper {
     @Mapping(target = "token", source = "token")
     UserDTO toDto(User user, String token);
 
+    @Mapping(target = "role", source = "role", qualifiedByName = "roleToName")
+    @Mapping(target = "token", ignore = true)
+    UserDTO toDto(User user);
+
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "organizationId", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
