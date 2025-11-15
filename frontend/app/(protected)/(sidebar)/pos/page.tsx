@@ -9,6 +9,7 @@ import {
   Trash2,
   AlertCircle,
   Store,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,7 +40,7 @@ interface BarStation {
   name: string;
   description?: string;
   isActive: boolean;
-  assignedUsers?: any[];
+  assignedUsers?: User[];
 }
 
 interface User {
@@ -56,6 +57,7 @@ export default function POSManagement() {
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userFetchError, setUserFetchError] = useState<string | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingStation, setEditingStation] = useState<BarStation | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -84,22 +86,22 @@ export default function POSManagement() {
       const url = isAdmin
         ? "/api/backend/bar-stations"
         : "/api/backend/bar-stations/user";
-      
+
       const response = await fetch(url, { cache: "no-store" });
-      
+
       if (!response.ok) {
         throw new Error("Failed to fetch stations");
       }
 
       const data = await response.json();
       setStations(data);
-      
+
       // If non-admin with single station, auto-redirect
       if (!isAdmin && data.length === 1) {
         router.push(`/pos/${data[0].id}`);
         return;
       }
-      
+
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
@@ -110,16 +112,22 @@ export default function POSManagement() {
 
   const fetchAllUsers = async () => {
     try {
-      // This would need a backend endpoint to list organization users
-      // For now, we'll use a placeholder
-      // TODO: Create /api/backend/users endpoint
-      const response = await fetch("/api/backend/account");
-      if (response.ok) {
-        const data = await response.json();
-        setAllUsers([data]); // Placeholder - just the current user
+      const response = await fetch("/api/backend/users", { cache: "no-store" });
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Failed to fetch users");
       }
+
+      const data = await response.json();
+      console.log("Users fetched:", data);
+      setAllUsers(data);
+      setUserFetchError(null);
     } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to fetch users";
       console.error("Error fetching users:", err);
+      setAllUsers([]);
+      setUserFetchError(message);
     }
   };
 
@@ -129,13 +137,13 @@ export default function POSManagement() {
       if (user) {
         const isAdmin = user.role === "ADMIN";
         await fetchStations(isAdmin);
-        
+
         if (isAdmin) {
           await fetchAllUsers();
         }
       }
     };
-    
+
     init();
   }, []);
 
@@ -167,7 +175,7 @@ export default function POSManagement() {
       setFormName("");
       setFormDescription("");
       setFormUserIds([]);
-      
+
       // Refresh stations
       await fetchStations(true);
     } catch (err) {
@@ -211,7 +219,7 @@ export default function POSManagement() {
       setFormName("");
       setFormDescription("");
       setFormUserIds([]);
-      
+
       await fetchStations(true);
     } catch (err) {
       alert(
