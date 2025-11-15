@@ -9,7 +9,7 @@ import {
   Plus,
   Search,
   History,
-  User,
+  User, ListFilterPlus, ListPlus,
 } from "lucide-react";
 
 interface InventoryTransactionResponseDto {
@@ -67,11 +67,18 @@ export default function Inventory() {
   });
   const [showCreateProductModal, setShowCreateProductModal] = useState(false);
   const [categories, setCategories] = useState([]);
+  const [showCreateCategoryModal, setShowCreateCategoryModal] = useState(false);
+  const [categoryForm, setCategoryForm] = useState({
+      name: "",
+      dynamicPricing: true,
+  });
   const [productForm, setProductForm] = useState({
     name: "",
     description: "",
     categoryId: "",
     currentPrice: "",
+    minPrice: "",
+    maxPrice: "",
     initialQuantity: "",
     notes: "",
   });
@@ -144,6 +151,8 @@ export default function Inventory() {
           description: productForm.description,
           categoryId: parseInt(productForm.categoryId),
           currentPrice: parseFloat(productForm.currentPrice),
+          minPrice: parseFloat(productForm.minPrice),
+          maxPrice: parseFloat(productForm.maxPrice),
         }),
       });
 
@@ -177,6 +186,8 @@ export default function Inventory() {
         description: "",
         categoryId: "",
         currentPrice: "",
+        minPrice: "",
+        maxPrice: "",
         initialQuantity: "",
         notes: "",
       });
@@ -255,11 +266,39 @@ export default function Inventory() {
     }
   };
 
+  const handleAddCategory = async () => {
+    try {
+      const categoryResponse = await fetch("/api/backend/categories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: categoryForm.name,
+          dynamicPricing: categoryForm.dynamicPricing,
+        }),
+      });
+
+      if (!categoryResponse.ok) {
+        const error = await categoryResponse.json();
+        throw new Error(error.message || "Failed to create category");
+      }
+
+      setShowCreateCategoryModal(false);
+      setCategoryForm({
+          name: "",
+          dynamicPricing: true,
+      });
+      await fetchCategories();
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
   const closeModals = () => {
     setShowAddModal(false);
     setShowRemoveModal(false);
     setShowAdjustModal(false);
     setShowHistoryModal(false);
+    setShowCreateCategoryModal(false);
     setSelectedProduct(null);
     setFormData({ quantity: "", notes: "", referenceId: "" });
     setTransactionHistory([]);
@@ -329,6 +368,13 @@ export default function Inventory() {
             </div>
             <div className="flex items-center gap-4">
               <Button
+                  onClick={() => setShowCreateCategoryModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-100 text-black rounded-lg hover:bg-blue-200 transition font-medium"
+              >
+                <ListPlus className="w-4 h-4" />
+                <span className="flex">New Category</span>
+              </Button>
+              <Button
                 onClick={() => setShowCreateProductModal(true)}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
               >
@@ -366,6 +412,15 @@ export default function Inventory() {
                   <th className="text-left py-3 px-4 font-semibold text-gray-300">
                     Product
                   </th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-300">
+                    Current Price
+                  </th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-300">
+                    Min Price
+                  </th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-300">
+                    Max Price
+                  </th>
                   <th className="text-center py-3 px-4 font-semibold text-gray-300">
                     Quantity
                   </th>
@@ -390,6 +445,7 @@ export default function Inventory() {
                 ) : (
                   filteredInventory.map((item) => {
                     const status = getStockStatus(item.quantity);
+                    // @ts-ignore
                     return (
                       <tr
                         key={item.id}
@@ -402,6 +458,21 @@ export default function Inventory() {
                           <div className="text-sm text-gray-400">
                             ID: {item.productId}
                           </div>
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <span className="text-lg font-semibold text-gray-300">
+                            {parseFloat(item.basePrice).toFixed(2)}€
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <span className="text-lg text-gray-300">
+                            {isNaN(parseFloat(item.minPrice)) ? "--" : parseFloat(item.minPrice).toFixed(2)}€
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <span className="text-lg text-gray-300">
+                             {isNaN(parseFloat(item.maxPrice)) ? "--" : parseFloat(item.maxPrice).toFixed(2)}€
+                          </span>
                         </td>
                         <td className="py-3 px-4 text-center">
                           <span className="text-lg font-semibold text-gray-300">
@@ -531,6 +602,46 @@ export default function Inventory() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1">
+                Min price *
+              </label>
+              <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={productForm.minPrice}
+                  onChange={(e) =>
+                      setProductForm({
+                        ...productForm,
+                        minPrice: e.target.value,
+                      })
+                  }
+                  className="w-full px-3 py-2 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="0.00"
+                  required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Max price *
+              </label>
+              <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={productForm.maxPrice}
+                  onChange={(e) =>
+                      setProductForm({
+                        ...productForm,
+                        maxPrice: e.target.value,
+                      })
+                  }
+                  className="w-full px-3 py-2 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="0.00"
+                  required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
                 Description
               </label>
               <Textarea
@@ -587,13 +698,72 @@ export default function Inventory() {
               disabled={
                 !productForm.name ||
                 !productForm.categoryId ||
-                !productForm.currentPrice
+                !productForm.currentPrice ||
+                  !productForm.minPrice ||
+                !productForm.maxPrice
               }
               className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium disabled:bg-gray-700 disabled:cursor-not-allowed"
             >
               Create Product
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showCreateCategoryModal} onOpenChange={setShowCreateCategoryModal}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Create New Category</DialogTitle>
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Category Name *
+              </label>
+              <Input
+                  type="text"
+                  value={categoryForm.name}
+                  onChange={(e) =>
+                      setCategoryForm({
+                        ...categoryForm,
+                        name: e.target.value,
+                      })
+                  }
+                  className="w-full px-3 py-2 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Category name"
+                  required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Dynamic Pricing *
+              </label>
+              <Select
+                  value={categoryForm.dynamicPricing ? "enabled" : "disabled"}
+                  onValueChange={(value) =>
+                      setCategoryForm({
+                        ...categoryForm,
+                        dynamicPricing: value === "enabled",
+                      })
+                  }
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select pricing type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="enabled">Enabled</SelectItem>
+                  <SelectItem value="disabled">Disabled</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+                onClick={handleAddCategory}
+                disabled={
+                  !categoryForm.name
+                }
+                className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium disabled:bg-gray-700 disabled:cursor-not-allowed"
+            >
+              Create Category
+            </Button>
+          </DialogHeader>
         </DialogContent>
       </Dialog>
 

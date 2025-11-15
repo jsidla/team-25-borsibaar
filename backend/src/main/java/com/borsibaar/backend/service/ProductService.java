@@ -70,6 +70,8 @@ public class ProductService {
                 base.name(),
                 base.description(),
                 base.currentPrice(),
+                base.minPrice(),
+                base.maxPrice(),
                 base.categoryId(),
                 cat.getName()
         );
@@ -108,6 +110,8 @@ public class ProductService {
                 base.name(),
                 base.description(),
                 base.currentPrice(),
+                base.minPrice(),
+                base.maxPrice(),
                 base.categoryId(),
                 categoryName
         );

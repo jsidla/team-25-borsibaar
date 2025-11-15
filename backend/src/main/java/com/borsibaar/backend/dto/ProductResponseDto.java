@@ -7,6 +7,8 @@ public record ProductResponseDto(
         String name,
         String description,
         BigDecimal currentPrice,
+        BigDecimal minPrice,
+        BigDecimal maxPrice,
         Long categoryId,
         String categoryName
 ) {}

@@ -20,8 +20,8 @@ public class PriceCorrectionJob {
     private final ProductRepository productRepository;
 
     public PriceCorrectionJob(InventoryRepository inventoryRepository,
-                              InventoryTransactionRepository inventoryTransactionRepository,
-                              ProductRepository productRepository) {
+            InventoryTransactionRepository inventoryTransactionRepository,
+            ProductRepository productRepository) {
         this.inventoryRepository = inventoryRepository;
         this.inventoryTransactionRepository = inventoryTransactionRepository;
         this.productRepository = productRepository;

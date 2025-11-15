@@ -15,6 +15,14 @@ public record ProductRequestDto(
         @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than 0")
         BigDecimal currentPrice,
 
+        @NotNull(message = "Min price is required")
+        @DecimalMin(value = "0.0", inclusive = false, message = "Min price must be greater than 0")
+        BigDecimal minPrice,
+
+        @NotNull(message = "Max price is required")
+        @DecimalMin(value = "0.0", inclusive = false, message = "Max price must be greater than 0")
+        BigDecimal maxPrice,
+
         @NotNull(message = "Category ID is required")
         Long categoryId
 ) {}

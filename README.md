@@ -189,3 +189,10 @@ server.forward-headers-strategy=framework
 - Increase/decrease price amount in org settings
 - Check if API returns not logged in response, reload app instead of error "<!doctype "... is not valid JSON
 - ...
+
+## Things that could be improved
+- Auth check should be done in the filter, not in each controller.
+- Input validation should be implemented in inventory management (e.g. negative prices, empty names, duplicate names, min greater than max, etc.)
+- TypeScript types could be generated/made from backend DTOs, typing should be improved in inventory management and other places as well
+- Some files are quite long, for example inventory/page.tsx could be split into smaller components. Same for POS page.
+- If there is no transaction history, show a message only instead of an error and a message
