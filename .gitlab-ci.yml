@@ -58,15 +58,8 @@ deploy-job:
     # Install required tools
     - apk add --no-cache tar
 
-    # Debug: Check current directory and variable
-    - pwd
-    - ls -la
-    - echo "ENV file path is $ENV_PRODUCTION_FILE"
-    - cat $ENV_PRODUCTION_FILE || echo "Cannot read ENV file"
-    
     # Copy the env file from GitLab CI/CD variable to current directory
-    - cp $ENV_PRODUCTION_FILE ./env.production
-    - ls -la ./env.production
+    - cp $ENV_PRODUCTION_FILE .env.production
     
     # Create deployment package
     - tar czf deployment.tar.gz backend/target/*.jar frontend/.next/ frontend/public/ frontend/package*.json docker-compose.yml backend/Dockerfile frontend/Dockerfile .env.production
