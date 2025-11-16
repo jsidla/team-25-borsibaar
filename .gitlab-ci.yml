@@ -6,7 +6,7 @@ variables:
   SSH_USER: "ubuntu"
   SERVER_IP: "193.40.157.19"
   DEPLOY_PATH: "/srv/borsibaar"
-  DOCKER_COMPOSE_FILE: "docker-compose.yaml"
+  DOCKER_COMPOSE_FILE: "docker-compose.prod.yaml"
 
 before_script:
   - 'which ssh-agent || apk add --no-cache openssh-client'
@@ -28,6 +28,7 @@ build-backend:
     expire_in: 1 hour
   only:
     - main
+    - 22-create-a-pipeline-for-the-server
 
 build-frontend:
   stage: build
@@ -45,6 +46,7 @@ build-frontend:
     expire_in: 1 hour
   only:
     - main
+    - 22-create-a-pipeline-for-the-server
 
 deploy-job:
   stage: deploy
@@ -77,26 +79,37 @@ deploy-job:
         tar xzf /tmp/deployment.tar.gz
         rm /tmp/deployment.tar.gz
         
+        # Debug: Check what files were extracted
+        echo "Files in deployment directory:"
+        ls -la
+        
+        # Check if docker-compose.prod.yaml exists
+        if [ ! -f $DOCKER_COMPOSE_FILE ]; then
+          echo "ERROR: $DOCKER_COMPOSE_FILE not found!"
+          exit 1
+        fi
+
         # Copy environment file if exists
         if [ -f .env.production ]; then
           cp .env.production .env
         fi
         
         # Stop existing containers
-        docker-compose down
+        docker-compose -f $DOCKER_COMPOSE_FILE down
         
         # Rebuild and start containers
-        docker-compose build --no-cache
-        docker-compose up -d
+        docker-compose -f $DOCKER_COMPOSE_FILE build --no-cache
+        docker-compose -f $DOCKER_COMPOSE_FILE up -d
         
         # Clean up old images
         docker image prune -f
         
         echo "Deployment complete!"
-        docker-compose ps
+        docker-compose -f $DOCKER_COMPOSE_FILE ps
         EOF
   environment:
     name: production
     url: http://$SERVER_IP
   only:
     - main
+    - 22-create-a-pipeline-for-the-server
