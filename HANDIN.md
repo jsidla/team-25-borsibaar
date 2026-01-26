@@ -58,13 +58,11 @@ Created `TEAM.md`, describing the team structure, responsibilities, and Git work
 
 As required by the homework, a conflict situation occurred when **multiple contributors modified overlapping parts of frontend files** during parallel development.
 
-### Conflict Description
-
-- kasdbkshbdfkbhdnv
 
 ### Conflict Resolution
 
-- slvkmldfsdfdsfgv
+- Created 2 branches that modified this line in this text document. 
+- Pushed both versions, resulting in a merge conflict. Resolved conflict.
 
 ---
 
