@@ -13,9 +13,7 @@ services:
       - borsibaar-network
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    image: jsidla/borsibaar-frontend:v1
     container_name: borsibaar-frontend
     env_file:
       - .env
