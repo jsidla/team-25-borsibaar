@@ -7,12 +7,11 @@ ARG NEXT_PUBLIC_BACKEND_URL
 ENV NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL}
 
 # Install dependencies
-COPY frontend/package.json frontend/package-lock.json ./
+COPY package.json package-lock.json ./
 RUN npm ci
 
 # Copy source and build
-COPY frontend/ .
-# Next.js picks NEXT_PUBLIC_* client vars at build time
+COPY . .
 RUN npm run build
 
 # Run stage (using Next.js standalone output)
