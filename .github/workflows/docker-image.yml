@@ -68,27 +68,24 @@ jobs:
 
       - name: Deploy to server
         run: |
-          ssh -i ~/.ssh/id_rsa \
-            -o StrictHostKeyChecking=yes \
-            "$SSH_USER@$SERVER_IP" << EOF
-          set -e
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=yes "$SSH_USER@$SERVER_IP" << 'EOF'
+            set -e
+            mkdir -p ~/studentbar-pos-deploy
+            cd ~/studentbar-pos-deploy
 
-          mkdir -p $DEPLOY_PATH
-          cd $DEPLOY_PATH
+            # Save environment file
+            printf '%s\n' "$ENV_PRODUCTION_FILE" > .env
 
-          # Save env file
-          printf '%s\n' "$ENV_PRODUCTION_FILE" > .env
+            # Pull latest Docker images
+            docker pull $DOCKER_USERNAME/borsibaar-backend:v1
+            docker pull $DOCKER_USERNAME/borsibaar-frontend:v1
 
-          # Pull latest images
-          docker pull $DOCKER_USERNAME/borsibaar-backend:v1
-          docker pull $DOCKER_USERNAME/borsibaar-frontend:v1
+            # Stop existing containers
+            docker compose -f docker-compose.prod.yaml down
 
-          # Stop existing containers
-          docker compose -f "$DOCKER_COMPOSE_FILE" down
+            # Start containers with latest images
+            docker compose -f docker-compose.prod.yaml up -d
 
-          # Recreate containers with latest images
-          docker compose -f "$DOCKER_COMPOSE_FILE" up -d
-
-          echo "Deployment complete!"
-          docker compose -f "$DOCKER_COMPOSE_FILE" ps
+            echo "Deployment complete!"
+            docker compose -f docker-compose.prod.yaml ps
           EOF
