@@ -66,38 +66,37 @@ jobs:
           mkdir -p ~/.ssh
           echo "${SSH_PRIVATE_KEY}" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan "${SERVER_IP}" >> ~/.ssh/known_hosts
+          ssh-keyscan -H "${SERVER_IP}" >> ~/.ssh/known_hosts
 
       - name: Deploy to server
         run: |
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=yes \
-            "${SSH_USER}@${SERVER_IP}" 'bash -s' << 'ENDSSH'
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no "${SSH_USER}@${SERVER_IP}" bash -s << EOF
             set -e
 
-            echo "Connected as: $(whoami) on $(hostname)"
+            echo "Connected as: \$(whoami) on \$(hostname)"
 
             DEPLOY_PATH="$HOME/studentbar-pos-deploy"
             DOCKER_COMPOSE_FILE="docker-compose.prod.yaml"
             DOCKER_USERNAME="${DOCKER_USERNAME}"
 
-            mkdir -p "$DEPLOY_PATH"
-            cd "$DEPLOY_PATH"
+            mkdir -p "\$DEPLOY_PATH"
+            cd "\$DEPLOY_PATH"
 
             # Save environment variables
             printf "%s\n" "${ENV_PRODUCTION_FILE}" > .env
 
             # Pull latest Docker images
-            docker pull "${DOCKER_USERNAME}/borsibaar-backend:v1"
-            docker pull "${DOCKER_USERNAME}/borsibaar-frontend:v1"
+            docker pull "\${DOCKER_USERNAME}/borsibaar-backend:v1"
+            docker pull "\${DOCKER_USERNAME}/borsibaar-frontend:v1"
 
             # Stop and remove any existing containers
-            docker compose -f "$DOCKER_COMPOSE_FILE" down
+            docker compose -f "\$DOCKER_COMPOSE_FILE" down
 
             # Start containers with latest images
-            docker compose -f "$DOCKER_COMPOSE_FILE" up -d
+            docker compose -f "\$DOCKER_COMPOSE_FILE" up -d
 
             # Show running containers explicitly referencing the compose file
-            docker compose -f "$DOCKER_COMPOSE_FILE" ps
+            docker compose -f "\$DOCKER_COMPOSE_FILE" ps
 
             echo "Deployment complete!"
-          ENDSSH
+          EOF
