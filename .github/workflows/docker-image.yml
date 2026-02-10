@@ -75,18 +75,20 @@ jobs:
 
       - name: Deploy to server
         run: |
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" bash -s <<'EOF'
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" bash -s <<EOF
             set -e
-            echo "Connected as: $(whoami) on $(hostname)"
-            DEPLOY_PATH="$HOME/studentbar-pos-deploy"
+            echo "Connected as: \$(whoami) on \$(hostname)"
+            DEPLOY_PATH="\$HOME/studentbar-pos-deploy"
             DOCKER_COMPOSE_FILE="docker-compose.prod.yaml"
-            mkdir -p "$DEPLOY_PATH"
-            cd "$DEPLOY_PATH"
-            printf "%s\n" "${ENV_PRODUCTION_FILE}" > .env
-            docker pull "${DOCKER_USERNAME}/borsibaar-backend:v1"
-            docker pull "${DOCKER_USERNAME}/borsibaar-frontend:v1"
-            docker compose -f "$DOCKER_COMPOSE_FILE" down
-            docker compose -f "$DOCKER_COMPOSE_FILE" up -d
-            docker compose -f "$DOCKER_COMPOSE_FILE" ps
+            DOCKER_USERNAME="${DOCKER_USERNAME}"
+            ENV_PRODUCTION_FILE="${ENV_PRODUCTION_FILE}"
+            mkdir -p "\$DEPLOY_PATH"
+            cd "\$DEPLOY_PATH"
+            printf "%s\n" "\${ENV_PRODUCTION_FILE}" > .env
+            docker pull "\${DOCKER_USERNAME}/borsibaar-backend:v1"
+            docker pull "\${DOCKER_USERNAME}/borsibaar-frontend:v1"
+            docker compose -f "\$DOCKER_COMPOSE_FILE" down
+            docker compose -f "\$DOCKER_COMPOSE_FILE" up -d
+            docker compose -f "\$DOCKER_COMPOSE_FILE" ps
             echo "Deployment complete!"
           EOF
